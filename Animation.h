@@ -2,6 +2,7 @@
 #define ANIMATION_H
 
 #include <Arduino.h> //It is very important to remember this! note that if you are using Arduino 1.0 IDE, change "WProgram.h" to "Arduino.h"
+#include "Segment.h"
 
 class Animation
 {
@@ -10,7 +11,9 @@ private:
     {
         SolidAnimation,
         FadeAnimation,
-        ChaseAnimation
+        ChaseAnimation,
+        RainbowAnimation,
+        BitFadeAnimation,
     };
     
     struct Color
@@ -22,10 +25,12 @@ private:
     
     Color color;
     
+    AnimationType _animationType;
     int _internalFrame;
     int _startPixel;
     int _endPixel;
     int _currentPixel;
+    Segment _pixelMask;
     byte _pace;
     int _localFrame;
     unsigned long _lastFrame = 0;
@@ -58,7 +63,6 @@ public:
         _endPixel = 0;
         _currentPixel = 0;
         _localFrame = 0;
-        _animationType;
         getIndex();
         leds = lights;
     }
@@ -125,6 +129,12 @@ public:
                 break;
             case (FadeAnimation):
                 runFade(increment);
+                break;
+            case (RainbowAnimation):
+                runRainbow(increment);
+                break;
+            case (BitFadeAnimation):
+                runBitFade(increment);
                 break;
         }
     }
@@ -193,6 +203,8 @@ public:
             traceLength = -_accelX/32;
         }
         
+        traceLength=2;
+        
         for(int brightness = 255;brightness>1;brightness/=traceLength)
         {
             leds[iFadePos].r = brightness;
@@ -242,6 +254,74 @@ public:
         
     }
     
+    void rainbow(int start, int end, int color, byte pace)
+    {
+        _startPixel = start;
+        _currentPixel = start;
+        _endPixel = end;
+        _animationType = RainbowAnimation;
+        _pace = pace;
+    }
+    
+    void runRainbow(bool increment)
+    {
+        Color c;
+        if (increment)
+        {
+            for(int i = _startPixel;i<=_endPixel;i++)
+            {
+                c = Wheel(i);
+                leds[i].r = c.r;
+                leds[i].g = c.g;
+                leds[i].b = c.b;
+            }
+        }
+    }
+    
+    void bitFade(Segment segment, int color, byte pace)
+    {
+        _pixelMask = segment;
+        _animationType = BitFadeAnimation;
+        _pace = pace;
+    }
+    
+    void runBitFade(bool increment)
+    {
+        if (increment)
+        {
+            if (direction == 0)
+            {
+                fadeLevel++;
+                if (fadeLevel == 128)
+                    direction = 1;
+            }
+            else if (direction == 1)
+            {
+                fadeLevel--;
+                if (fadeLevel == 0)
+                    direction = 0;
+            }
+        }
+
+        // loop over the bits in the pixel mask and if it's set to 1 then change the fade level
+        //Serial.print(_pixelMask);Serial.print(" ");
+        for (int i = 0; i < _pixelMask.length; i++) {
+            if (1 == _pixelMask[i])
+            {
+                //Serial.print(1);
+                leds[i].r = 0;
+                leds[i].g = 0;
+                leds[i].b = fadeLevel;
+            }
+            else
+            {
+                //Serial.print(0);
+            }
+        }
+        //Serial.println();
+        
+    }
+
     void fade(int start, int end, int color, byte pace)
     {
         //	Serial.print(getIndex(false));Serial.print(" ");Serial.println("start solid");
@@ -281,8 +361,36 @@ public:
         }
     }
     
+
+
+    // Input a value 0 to 255 to get a color value.
+    // The colours are a transition r - g - b - back to r.
+    Color Wheel(byte WheelPos)
+    {
+        Animation::Color c;
+        if(WheelPos < 85)
+        {
+            c.r = WheelPos * 3;
+            c.g = 255 - WheelPos * 3;
+            c.b = 0;
+        }
+        else if(WheelPos < 170)
+        {
+            WheelPos -= 85;
+            c.r = 255 - WheelPos * 3;
+            c.g = 0;
+            c.b = WheelPos * 3;
+        }
+        else
+        {
+            WheelPos -= 170;
+            c.r = 0;
+            c.g = WheelPos * 3;
+            c.b = 255 - WheelPos * 3;
+        }
+        return c;
+    }
+
 };
-
-
 
 #endif
