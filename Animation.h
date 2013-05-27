@@ -4,18 +4,19 @@
 #include <Arduino.h> //It is very important to remember this! note that if you are using Arduino 1.0 IDE, change "WProgram.h" to "Arduino.h"
 #include "Segment.h"
 
+enum AnimationType
+{
+    NoAnimation,
+    SolidAnimation,
+    FadeAnimation,
+    ChaseAnimation,
+    RainbowAnimation,
+    BitFadeAnimation,
+};
 class Animation
 {
 private:
-    enum AnimationType
-    {
-        SolidAnimation,
-        FadeAnimation,
-        ChaseAnimation,
-        RainbowAnimation,
-        BitFadeAnimation,
-    };
-    
+
     struct Color
     {
         byte r;
@@ -51,6 +52,7 @@ public:
     CRGB* leds;
     int numLeds;
     
+    // todo: why isn't clear working for bitfields
     void clear()
     {
         memset(leds, 0, numLeds * sizeof(struct CRGB));
@@ -315,6 +317,10 @@ public:
             }
             else
             {
+                //Serial.print(1);
+                leds[i].r = 0;
+                leds[i].g = 0;
+                leds[i].b = 0;
                 //Serial.print(0);
             }
         }
