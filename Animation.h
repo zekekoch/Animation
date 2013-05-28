@@ -308,12 +308,12 @@ public:
         // loop over the bits in the pixel mask and if it's set to 1 then change the fade level
         //Serial.print(_pixelMask);Serial.print(" ");
         for (int i = 0; i < _pixelMask.length; i++) {
-            if (1 == _pixelMask[i])
+            if (1 == _pixelMask[i] && fadeLevel > 0)
             {
                 //Serial.print(1);
-                leds[i].r = 0;
-                leds[i].g = 0;
-                leds[i].b = fadeLevel;
+                leds[i].r = color.r * 128/fadeLevel;
+                leds[i].g = color.g * 128/fadeLevel;
+                leds[i].b = color.b * 128/fadeLevel;
             }
             else
             {
