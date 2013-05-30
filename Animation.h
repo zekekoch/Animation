@@ -56,6 +56,7 @@ public:
     void clear()
     {
         memset(leds, 0, numLeds * sizeof(struct CRGB));
+        _pixelMask.clear();
     }
     
     //<<constructor>> setup the LED, make pin 13 an OUTPUT
@@ -306,26 +307,32 @@ public:
         }
 
         // loop over the bits in the pixel mask and if it's set to 1 then change the fade level
-        //Serial.print(_pixelMask);Serial.print(" ");
         for (int i = 0; i < _pixelMask.length; i++) {
             if (1 == _pixelMask[i] && fadeLevel > 0)
             {
-                //Serial.print(1);
-                leds[i].r = color.r * 128/fadeLevel;
-                leds[i].g = color.g * 128/fadeLevel;
-                leds[i].b = color.b * 128/fadeLevel;
+                //Serial.print("bitFade ");Serial.print(color.r);Serial.print(":");Serial.print(fadeLevel);Serial.print(" ");printColor(color);
+                leds[i].r = 0;
+                leds[i].g = 0;
+                leds[i].b = fadeLevel;
+                //Serial.print("->");printColor(leds[i]);Serial.println();
             }
             else
             {
-                //Serial.print(1);
                 leds[i].r = 0;
                 leds[i].g = 0;
                 leds[i].b = 0;
-                //Serial.print(0);
             }
         }
-        //Serial.println();
-        
+    
+    }
+    
+    void printColor(Color c)
+    {
+        Serial.print("(");Serial.print(c.r);Serial.print(":");Serial.print(c.g);Serial.print(":");Serial.print(c.b);Serial.print(")");
+    }
+    void printColor(CRGB c)
+    {
+        Serial.print("(");Serial.print(c.r);Serial.print(":");Serial.print(c.g);Serial.print(":");Serial.print(c.b);Serial.print(")");
     }
 
     void fade(int start, int end, int color, byte pace)

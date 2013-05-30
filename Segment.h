@@ -21,7 +21,7 @@ enum Strand
     VMiddle = 4,
     VBottom = 5,
     Vertical = 6,
-};
+} StrandEnum;
 
 enum SegmentEnum
 {
@@ -78,6 +78,8 @@ enum SegmentEnum
     VBottomBackLeftTop,
     VBottomBackLeftMiddle,
     VBottomBackLeftLower,
+    
+    AllOff,
 };
 
 // this maps form the segmentenum to a strand
@@ -213,6 +215,16 @@ public:
             s+= "\n";
         }
         return s;
+    }
+    
+    void clear ()
+    {
+        for(int i = 0;i<LightMapSize;i++)
+        {
+            lightMap[i] = 0;
+        }
+        length = 0;
+        SegmentEnum RingTopBackCenter;
     }
     
 };
