@@ -10,115 +10,35 @@
 #define DressTester_Segment_h
 
 #include <Arduino.h> //It is very important to remember this! note that if you are using Arduino 1.0 IDE, change "WProgram.h" to "Arduino.h"
-
-enum Strand
-{
-    Error = -1,
-    RingTop = 0,
-    RingMiddle = 1,
-    RingBottom = 2,
-    VTop = 3,
-    VMiddle = 4,
-    VBottom = 5,
-    Vertical = 6,
-} StrandEnum;
-
-enum SegmentEnum
-{
-    RingTopBackCenter,
-    RingTopBackRightInner,
-    RingTopBackRightOuter,
-    RingTopLeft,
-    RingTopFrontLeftOuter,
-    RingTopFrontLeftInner,
-    RingTopFrontRightInner,
-    RingTopFrontRightOuter,
-    RingTopRight,
-    RingTopBackLeftOuter,
-    RingTopBackLeftInner,
-    
-    RingMiddleBackCenter,
-    RingMiddleBackRightInner,
-    RingMiddleBackRightOuter,
-    RingMiddleLeft,
-    RingMiddleFrontLeftInner,
-    RingMiddleFrontRightInner,
-    RingMiddleRight,
-    RingMiddleBackLeftOuter,
-    RingMiddleBackLeftInner,
-    
-    RingBottomBackCenter,
-    RingBottomBackRightInner,
-    RingBottomLeft,
-    RingBottomRight,
-    RingBottomBackLeftInner,
-    
-    VTopBackCenter,
-    VTopRight,
-    VTopLeft,
-    
-    VMiddleBackCenter,
-    VMiddleBackLeftLower,
-    VMiddleBackLeftMiddle,
-    VMiddleBackLeftUpper,
-    VMiddleFrontRightMiddle,
-    VMiddleFrontLeftMiddle,
-    VMiddleBackRightUpper,
-    VMiddleBackRightMiddle,
-    VMiddleBackRightLower,
-    
-    VBottomBackCenter,
-    VBottomBackRightLower,
-    VBottomBackRightMiddle,
-    VBottomBackRightTop,
-    VBottomFrontLeftMiddle,
-    VBottomFrontLeftLower,
-    VBottomFrontRightLower,
-    VBottomFrontRightMiddle,
-    VBottomBackLeftTop,
-    VBottomBackLeftMiddle,
-    VBottomBackLeftLower,
-    
-    AllOff,
-};
+#include "constants.h"
 
 // this maps form the segmentenum to a strand
 // I make the size of the array the index of the last
 // item in the enum.  there might be a better way to do this
-static const Strand segmentToStrand[VBottomBackLeftLower+1] =
-{
-    RingTop,RingTop,RingTop,RingTop,RingTop,RingTop,RingTop,RingTop,RingTop,RingTop,RingTop,
-    RingMiddle,RingMiddle,RingMiddle,RingMiddle,RingMiddle,RingMiddle,RingMiddle,RingMiddle,RingMiddle,
-    RingBottom,RingBottom,RingBottom,RingBottom,RingBottom,
-    VTop,VTop,VTop,
-    VMiddle,VMiddle,VMiddle,VMiddle,VMiddle,VMiddle,VMiddle,VMiddle,VMiddle,
-    VBottom,VBottom,VBottom,VBottom,VBottom,VBottom,VBottom,VBottom,VBottom,VBottom,VBottom,
-};
-
 
 class Segment
 {
     
 private:
     static const int LightMapSize = 4;
-
+    
 public:
 
-    int lightMap[LightMapSize];
-    int length;
-    SegmentEnum segment;
-    Strand strand;
+    int lightMap[LightMapSize] = {0};
+    int length = 0;
+    SegmentEnum segment = AllOff;
+    StrandEnum strand = AllStrands;
 
     Segment()
     {
         
     }
     
-    Segment(SegmentEnum segmentEnum, String bitField)
+    Segment(SegmentEnum segmentEnum, String bitField, StrandEnum segmentStrand)
     {
         length = bitField.length();
         segment = segmentEnum;
-        strand = segmentToStrand[segmentEnum];
+        strand = segmentStrand;
 //        strand = RingTop;
         int chunk = 0;
         int bit = 0;
@@ -145,11 +65,11 @@ public:
         }
     }
     
-    Segment(SegmentEnum segmentEnum, int s0, int s1, int s2, int s3, int segmentLength)
+    Segment(SegmentEnum segmentEnum, int s0, int s1, int s2, int s3, int segmentLength, StrandEnum segmentStrand)
     {
         segment = segmentEnum;
         length = segmentLength;
-        strand = segmentToStrand[segmentEnum];
+        strand = segmentStrand;
         lightMap[0] = s0;
         lightMap[1] = s1;
         lightMap[2] = s2;
@@ -163,7 +83,7 @@ public:
     
     Segment operator& (Segment param) {
         Segment temp = Segment();
-        temp.strand = (strand == param.strand) ? strand : Error;
+        temp.strand = (strand == param.strand) ? strand : AllStrands;
         temp.length = length;
 
         for (int i = 0;i<LightMapSize;i++)
@@ -176,7 +96,7 @@ public:
     Segment operator| (Segment param) {
         Segment temp = Segment();
         
-        temp.strand = (strand == param.strand) ? strand : Error;
+        temp.strand = (strand == param.strand) ? strand : AllStrands;
         temp.length = length;        
         
         for (int i = 0;i<LightMapSize;i++)
@@ -215,6 +135,11 @@ public:
             s+= "\n";
         }
         return s;
+    }
+    
+    String name()
+    {
+        return String(segment);
     }
     
     void clear ()

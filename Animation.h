@@ -2,17 +2,11 @@
 #define ANIMATION_H
 
 #include <Arduino.h> //It is very important to remember this! note that if you are using Arduino 1.0 IDE, change "WProgram.h" to "Arduino.h"
+#include "constants.h"
 #include "Segment.h"
 
-enum AnimationType
-{
-    NoAnimation,
-    SolidAnimation,
-    FadeAnimation,
-    ChaseAnimation,
-    RainbowAnimation,
-    BitFadeAnimation,
-};
+
+
 class Animation
 {
 private:
@@ -59,7 +53,6 @@ public:
         _pixelMask.clear();
     }
     
-    //<<constructor>> setup the LED, make pin 13 an OUTPUT
     Animation(CRGB* lights, int numLeds)
     {
         _startPixel = 0;
@@ -283,6 +276,7 @@ public:
     
     void bitFade(Segment segment, int color, byte pace)
     {
+        Serial.print("bitfade seg: ");Serial.print(segment.name());Serial.print(" strand: ");Serial.print(segment.strand);Serial.println();
         _pixelMask = segment;
         _animationType = BitFadeAnimation;
         _pace = pace;
