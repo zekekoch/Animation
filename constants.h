@@ -29,6 +29,7 @@ enum AnimationType
     ChaseAnimation,
     RainbowAnimation,
     BitFadeAnimation,
+    BitHSVFadeAnimation,
 };
 
 enum SegmentEnum
@@ -45,6 +46,7 @@ enum SegmentEnum
     RingTopBackLeftOuter,
     RingTopBackLeftInner,
     
+    
     RingMiddleBackCenter,
     RingMiddleBackRightInner,
     RingMiddleBackRightOuter,
@@ -55,15 +57,19 @@ enum SegmentEnum
     RingMiddleBackLeftOuter,
     RingMiddleBackLeftInner,
     
+    
     RingBottomBackCenter,
     RingBottomBackRightInner,
     RingBottomLeft,
     RingBottomRight,
     RingBottomBackLeftInner,
     
+    
+    
     VTopBackCenter,
     VTopRight,
     VTopLeft,
+    
     
     VMiddleBackCenter,
     VMiddleBackLeftLower,
@@ -74,6 +80,7 @@ enum SegmentEnum
     VMiddleBackRightUpper,
     VMiddleBackRightMiddle,
     VMiddleBackRightLower,
+    
     
     VBottomBackCenter,
     VBottomBackRightLower,

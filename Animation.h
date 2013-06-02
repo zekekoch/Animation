@@ -11,14 +11,8 @@ class Animation
 {
 private:
 
-    struct Color
-    {
-        byte r;
-        byte g;
-        byte b;
-    };
-    
-    Color color;
+    CRGB color;
+    CHSV hsvColor;
     
     AnimationType _animationType;
     int _internalFrame;
@@ -37,12 +31,7 @@ private:
     byte direction = 0;
     
 public:
-    struct CRGB
-    {
-        unsigned char g;
-        unsigned char r;
-        unsigned char b;
-    };
+
     CRGB* leds;
     int numLeds;
     
@@ -53,7 +42,7 @@ public:
         _pixelMask.clear();
     }
     
-    Animation(CRGB* lights, int numLeds)
+    Animation(int pin, CRGB* lights, int numLeds)
     {
         _startPixel = 0;
         _endPixel = 0;
@@ -98,10 +87,10 @@ public:
     {
         bool increment;
         
-    	//Serial.print(_animationIndex);Serial.print(" ");Serial.print("play ");Serial.print(_animationType);
-        //Serial.print(" now ");Serial.print(millis());Serial.print(" last ");Serial.print(_lastFrame);
-        //Serial.print(" pace ");Serial.print(_pace);
-        //Serial.println();
+    	Serial.print(_animationIndex);Serial.print(" ");Serial.print("play ");Serial.print(_animationType);
+        Serial.print(" now ");Serial.print(millis());Serial.print(" last ");Serial.print(_lastFrame);
+        Serial.print(" pace ");Serial.print(_pace);
+        Serial.println();
         
         if (millis() > _lastFrame + _pace)
         {
@@ -131,6 +120,9 @@ public:
                 break;
             case (BitFadeAnimation):
                 runBitFade(increment);
+                break;
+            case (BitHSVFadeAnimation):
+                runBitHSVFade(increment);
                 break;
         }
     }
@@ -261,7 +253,7 @@ public:
     
     void runRainbow(bool increment)
     {
-        Color c;
+        CRGB c;
         if (increment)
         {
             for(int i = _startPixel;i<=_endPixel;i++)
@@ -276,7 +268,7 @@ public:
     
     void bitFade(Segment segment, int color, byte pace)
     {
-        Serial.print("bitfade seg: ");Serial.print(segment.name());Serial.print(" strand: ");Serial.print(segment.strand);Serial.println();
+        //Serial.print("bitfade seg: ");Serial.print(segment.name());Serial.print(" strand: ");Serial.print(segment.strand);Serial.println();
         _pixelMask = segment;
         _animationType = BitFadeAnimation;
         _pace = pace;
@@ -320,10 +312,57 @@ public:
     
     }
     
-    void printColor(Color c)
+    void bitHSVFade(Segment segment, CHSV color, byte pace )
     {
-        Serial.print("(");Serial.print(c.r);Serial.print(":");Serial.print(c.g);Serial.print(":");Serial.print(c.b);Serial.print(")");
+        Serial.println("setting bitHSVFade");
+        _pixelMask = segment;
+        _animationType = BitHSVFadeAnimation;
+        _pace = pace;
+        hsvColor = color;
     }
+    
+    CRGB tempColor;
+    void runBitHSVFade(bool increment)
+    {
+        CRGB tempColor;
+        Serial.print("in bit hsv fade h=");Serial.println(hsvColor.h);
+        if (increment)
+        {
+            if (direction == 0)
+            {
+                fadeLevel++;
+                if (fadeLevel == 128)
+                    direction = 1;
+            }
+            else if (direction == 1)
+            {
+                fadeLevel--;
+                if (fadeLevel == 0)
+                    direction = 0;
+            }
+        }
+        
+        // loop over the bits in the pixel mask and if it's set to 1 then change the fade level
+        for (int i = 0; i < _pixelMask.length; i++) {
+            if (1 == _pixelMask[i] && fadeLevel > 0)
+            {
+                Serial.print("bitFadeHSV ");Serial.print(hsvColor.h);Serial.print(" fade:");Serial.print(fadeLevel);
+                hsv2rgb_rainbow(CHSV(hsvColor.h, fadeLevel, hsvColor.v), tempColor);
+                Serial.print(" h:");Serial.print(hsvColor.h);Serial.print(" s:");Serial.print(hsvColor.s);Serial.print(" v:");Serial.print(hsvColor.v);Serial.println();
+                leds[i] = tempColor;
+                Serial.print(" r:");Serial.print(leds[i].r);Serial.print(" g:");Serial.print(leds[i].g);Serial.print(" b:");Serial.print(leds[i].b);Serial.println();
+                Serial.print("->");printColor(leds[i]);Serial.println();
+            }
+            else
+            {
+                leds[i].r = 0;
+                leds[i].g = 0;
+                leds[i].b = 0;
+            }
+        }
+        
+    }
+    
     void printColor(CRGB c)
     {
         Serial.print("(");Serial.print(c.r);Serial.print(":");Serial.print(c.g);Serial.print(":");Serial.print(c.b);Serial.print(")");
@@ -372,9 +411,9 @@ public:
 
     // Input a value 0 to 255 to get a color value.
     // The colours are a transition r - g - b - back to r.
-    Color Wheel(byte WheelPos)
+    CRGB Wheel(byte WheelPos)
     {
-        Animation::Color c;
+        CRGB c;
         if(WheelPos < 85)
         {
             c.r = WheelPos * 3;
